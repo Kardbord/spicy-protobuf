@@ -1,5 +1,3 @@
-# TODO: Define your analyzer here.
-
 module protobuf;
 
 import zeek;
@@ -16,4 +14,13 @@ public type Packet = unit {
         # Feed into Zeek's next-layer packet analysis.
         zeek::forward_packet(self.protocol);
     }
+};
+
+type WireType = enum {
+    VARINT = 0x00,
+    I64    = 0x01,
+    LEN    = 0x02,
+    SGROUP = 0x03, # deprecated
+    EGROUP = 0x04, # deprecated
+    I32    = 0x05
 };
