@@ -8,18 +8,22 @@ public type Packet = unit {
     on %done {
         # Feed into Zeek's next-layer packet analysis.
 
-        # KBK - Comment out so we can build
+        # KBK HERE - Comment out so we can build
         #zeek::forward_packet(self.payload);
     }
 };
 
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
+
+#
+#  KBK - This should parse a sequence of zero or more TagAndValue pairs until end-of-data.
+#
 type Message = unit {
-    message: TagAndValue[] &eod;
+    message: TagAndValue[] &eod; # <==== KBK HERE
 };
 
-type TagAndValue = unit {
+type TagAndValue = unit {        # <==== KBK HERE
     tag:   Tag;
     value: Value;
 };
