@@ -7,14 +7,21 @@ public type Packet = unit {
 
     on %done {
         # Feed into Zeek's next-layer packet analysis.
-        zeek::forward_packet(self.payload);
+
+        # KBK - Comment out so we can build
+        #zeek::forward_packet(self.payload);
     }
 };
 
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
 type Message = unit {
-    # TODO
+    message: TagAndValue[] &eod;
+};
+
+type TagAndValue = unit {
+    tag:   Tag;
+    value: Value;
 };
 
 # tag := (field << 3) | wire_type
