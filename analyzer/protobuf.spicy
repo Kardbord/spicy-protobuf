@@ -1,29 +1,20 @@
 module protobuf;
 
-import zeek;
-
 public type Packet = unit {
     payload: Message;
 
     on %done {
-        # Feed into Zeek's next-layer packet analysis.
-
-        # KBK HERE - Comment out so we can build
-        #zeek::forward_packet(self.payload);
+        print self;
     }
 };
 
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
-
-#
-#  KBK - This should parse a sequence of zero or more TagAndValue pairs until end-of-data.
-#
 type Message = unit {
-    message: TagAndValue[] &eod; # <==== KBK HERE
+    message: TagAndValue[] &eod;
 };
 
-type TagAndValue = unit {        # <==== KBK HERE
+type TagAndValue = unit {
     tag:   Tag;
     value: Value;
 };
