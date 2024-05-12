@@ -1,18 +1,14 @@
 module protobuf;
 
-public type Packet = unit {
-    payload: Message;
+# message := (tag value)*
+#     A message is encoded as a sequence of zero or more pairs of tags and values.
+public type Message = unit {
+    message: bytes &eod;
+    #message: TagAndValue[] &eod;
 
     on %done {
         print self;
     }
-};
-
-# message := (tag value)*
-#     A message is encoded as a sequence of zero or more pairs of tags and values.
-type Message = unit {
-    message: bytes &eod;
-    #message: TagAndValue[] &eod;
 };
 
 type TagAndValue = unit {
