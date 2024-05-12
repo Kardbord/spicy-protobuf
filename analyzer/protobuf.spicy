@@ -11,7 +11,8 @@ public type Packet = unit {
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
 type Message = unit {
-    message: TagAndValue[] &eod;
+    message: bytes &eod;
+    #message: TagAndValue[] &eod;
 };
 
 type TagAndValue = unit {
