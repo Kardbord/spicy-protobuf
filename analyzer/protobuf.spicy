@@ -1,9 +1,12 @@
 module protobuf;
 
+import spicy;
+
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
 public type Message = unit {
-    message: bytes &eod;
+    first_tag: VarInt;
+    the_rest: bytes &eod;
     #message: TagAndValue[] &eod;
 
     on %done {
@@ -46,7 +49,14 @@ type Value = unit {
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
 #     Encoded as varints (sintN are ZigZag-encoded first).
 type VarInt = unit {
-    # TODO
+    data: VarIntOctet[] &until-including=(!($$.data.continuation_bit));
+};
+
+type VarIntOctet = unit {
+    data: bitfield(8) {
+        continuation_bit: 0;
+        payload: 1..7;
+    } &bit-order=spicy::BitOrder::MSB0;
 };
 
 # i32 := sfixed32 | fixed32 | float
