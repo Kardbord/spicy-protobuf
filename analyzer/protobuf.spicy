@@ -32,6 +32,12 @@ type TagAndValue = unit {
 #     A tag is a combination of a wire_type, stored in the least significant three bits,
 #     and the field number that is defined in the .proto file.
 #     Encoded as uint32 varint.
+# Example:
+#   In the protobuf_udp_addressbook.raw file, the top level message is a repeated field with
+#   a field number of 1. Therefore the tag would be 00001010.
+#   [0]0001010 : continuation bit
+#   0[0001]010 : varint payload, aka field number
+#   00001[010] : wire type (2, which is wire type LEN)
 type Tag = unit {
     # TODO
 };
