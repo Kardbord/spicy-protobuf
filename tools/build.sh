@@ -87,9 +87,12 @@ function build {
       fi
     done
 
-
     # TODO: Encapsulate tests within 'testing' directory
-    spicy-driver ./*.hlto -f ../test-data/protobuf_udp_addressbook.raw
+    cmd="spicy-driver ./*.hlto -f ../test-data/protobuf_udp_addressbook.raw"
+    echo "============================================="
+    echo "Running ${cmd}"
+    echo "============================================="
+    eval "${cmd}"
     #pushd "../testing/" >/dev/null
     #make
     #popd >/dev/null
