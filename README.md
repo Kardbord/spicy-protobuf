@@ -2,7 +2,7 @@
 
 This repository contains a Spicy-based analyzer for Google Protocol Buffers.
 
-## References & Further Reading
+## References
 
 * [Spicy](https://github.com/zeek/spicy)
   * [Docs](https://docs.zeek.org/projects/spicy/en/latest/programming/index.html)
@@ -12,3 +12,4 @@ This repository contains a Spicy-based analyzer for Google Protocol Buffers.
 * [Protobuf Encoding](https://protobuf.dev/programming-guides/encoding/)
   * [Protoscope](https://github.com/protocolbuffers/protoscope)
   * [Cheat Sheet](https://protobuf.dev/programming-guides/encoding/#cheat-sheet)
+* [Wireshark Decoding](https://wiki.wireshark.org/Protobuf)
