@@ -5,7 +5,7 @@ import spicy;
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
 public type Message = unit {
-    first_tag: VarInt;
+    first_tag: TagAndValue;
     the_rest: bytes &eod;
     #message: TagAndValue[] &eod;
 
@@ -25,7 +25,8 @@ type WireType = enum {
 
 type TagAndValue = unit {
     tag:   Tag;
-    value: Value;
+    var_int : VarInt;
+#    value: Value;
 };
 
 # tag := (field << 3) | wire_type
@@ -39,6 +40,11 @@ type TagAndValue = unit {
 #   0[0001]010 : varint payload, aka field number
 #   00001[010] : wire type (2, which is wire type LEN)
 type Tag = unit {
+    data: bitfield(8) {
+        ignore: 0;
+        field_number: 1..4;
+        wire_type: 5..7;
+    } &bit-order=spicy::BitOrder::MSB0;
     # TODO
 };
 
@@ -63,6 +69,10 @@ type VarIntOctet = unit {
         continuation_bit: 0;
         payload: 1..7;
     } &bit-order=spicy::BitOrder::MSB0;
+    on %done {
+        print self.data.continuation_bit;
+        print self.data.payload;
+    }
 };
 
 # i32 := sfixed32 | fixed32 | float
