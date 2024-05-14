@@ -25,8 +25,7 @@ type WireType = enum {
 
 type TagAndValue = unit {
     tag:   Tag;
-    var_int : VarInt;
-#    value: Value;
+    value: Value(self.tag);
 };
 
 # tag := (field << 3) | wire_type
@@ -43,7 +42,7 @@ type Tag = unit {
     data: bitfield(8) {
         ignore: 0;
         field_number: 1..4;
-        wire_type: 5..7;
+        wire_type: 5..7 &convert=WireType($$);
     } &bit-order=spicy::BitOrder::MSB0;
     # TODO
 };
@@ -54,8 +53,13 @@ type Tag = unit {
 #          len-prefix  for wire_type == LEN,
 #          <empty>     for wire_type == SGROUP or EGROUP
 #     A value is stored differently depending on the wire_type specified in the tag.
-type Value = unit {
-    # TODO
+type Value = unit(tag: Tag) {
+    switch(tag.data.wire_type) {
+        WireType::VARINT -> var_int : VarInt;
+        WireType::I32    -> i32     : I32;
+        WireType::I64    -> i64     : I64;
+        # TODO - Finish switch for other types
+    };
 };
 
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
