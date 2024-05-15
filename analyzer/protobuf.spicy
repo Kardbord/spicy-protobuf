@@ -5,7 +5,7 @@ import spicy;
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
 public type Message = unit {
-    first_tag: VarInt;
+    first_tag: TagAndValue;
     the_rest: bytes &eod;
     #message: TagAndValue[] &eod;
 
@@ -25,7 +25,7 @@ type WireType = enum {
 
 type TagAndValue = unit {
     tag:   Tag;
-    value: Value;
+    value: Value(self.tag);
 };
 
 # tag := (field << 3) | wire_type
@@ -39,6 +39,11 @@ type TagAndValue = unit {
 #   0[0001]010 : varint payload, aka field number
 #   00001[010] : wire type (2, which is wire type LEN)
 type Tag = unit {
+    data: bitfield(8) {
+        ignore: 0;
+        field_number: 1..4;
+        wire_type: 5..7 &convert=WireType($$);
+    } &bit-order=spicy::BitOrder::MSB0;
     # TODO
 };
 
@@ -48,8 +53,13 @@ type Tag = unit {
 #          len-prefix  for wire_type == LEN,
 #          <empty>     for wire_type == SGROUP or EGROUP
 #     A value is stored differently depending on the wire_type specified in the tag.
-type Value = unit {
-    # TODO
+type Value = unit(tag: Tag) {
+    switch(tag.data.wire_type) {
+        WireType::VARINT -> var_int : VarInt;
+        WireType::I32    -> i32     : I32;
+        WireType::I64    -> i64     : I64;
+        # TODO - Finish switch for other types
+    };
 };
 
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
@@ -63,6 +73,9 @@ type VarIntOctet = unit {
         continuation_bit: 0;
         payload: 1..7;
     } &bit-order=spicy::BitOrder::MSB0;
+    on %done {
+        print "Continuation Bit: %d; little-endian payload: %d" %(self.data.continuation_bit, self.data.payload);
+    }
 };
 
 # i32 := sfixed32 | fixed32 | float
