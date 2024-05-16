@@ -39,14 +39,14 @@ type TagAndValue = unit {
 #   0[0001]010 : varint payload, aka field number
 #   00001[010] : wire type (2, which is wire type LEN)
 type Tag = unit {
-    field_num: VarInt;
+    field_num: VarInt &convert=uint64($$.data);
     wire_type: uint64 &convert=WireType($$) if (False);
 
     on %done {
         # Last three bits are wire type
-        self.wire_type = WireType(self.field_num.data & 0x07);
+        self.wire_type = WireType(self.field_num & 0x07);
         # Upper bits are field number
-        self.field_num.data = self.field_num.data >> 3;
+        self.field_num = self.field_num >> 3;
     }
 };
 
@@ -58,7 +58,7 @@ type Tag = unit {
 #     A value is stored differently depending on the wire_type specified in the tag.
 type Value = unit(tag: Tag) {
     switch(tag.wire_type) {
-        WireType::VARINT -> varint  : VarInt;
+        WireType::VARINT -> varint  : VarInt &convert=uint64($$.data);
         WireType::I32    -> i32     : I32;
         WireType::I64    -> i64     : I64;
         # TODO - Finish switch for other types
