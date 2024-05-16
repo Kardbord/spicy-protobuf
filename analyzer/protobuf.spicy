@@ -45,6 +45,9 @@ type Tag = unit {
         wire_type: 5..7 &convert=WireType($$);
     } &bit-order=spicy::BitOrder::MSB0;
     # TODO
+    on %done {
+        print "ignore: '%d' field_num: '%d' wire_type: '%d'" % (self.data.ignore, self.data.field_number, self.data.wire_type);
+    }
 };
 
 # value := varint      for wire_type == VARINT,
@@ -65,16 +68,9 @@ type Value = unit(tag: Tag) {
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
 #     Encoded as varints (sintN are ZigZag-encoded first).
 type VarInt = unit {
-    data: VarIntOctet[] &until-including=(!($$.data.continuation_bit));
-};
-
-type VarIntOctet = unit {
-    data: bitfield(8) {
-        continuation_bit: 0;
-        payload: 1..7;
-    } &bit-order=spicy::BitOrder::MSB0;
+    data: uint8[] &until-including=($$ < 0x80);
     on %done {
-        print "Continuation Bit: %d; little-endian payload: %d" %(self.data.continuation_bit, self.data.payload);
+        print "VarInt Data=%s" % self.data;
     }
 };
 

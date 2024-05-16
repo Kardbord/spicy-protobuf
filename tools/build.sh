@@ -88,7 +88,7 @@ function build {
     done
 
     # TODO: Encapsulate tests within 'testing' directory
-    cmd="spicy-driver ./*.hlto -f ../test-data/protobuf_udp_addressbook.raw"
+    cmd="spicy-driver ./*.hlto -f ../test-data/protobuf_150.raw"
     echo "============================================="
     echo "Running ${cmd}"
     echo "============================================="
@@ -100,6 +100,7 @@ function build {
 }
 
 function main {
+  mkdir -p "${WD}"
   pushd "${WD}" >/dev/null
   process_args "${@}"
   build
