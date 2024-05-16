@@ -5,7 +5,7 @@ import spicy;
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
 public type Message = unit {
-    first_tag: TagAndValue;
+    first_field: TagAndValue;
     the_rest: bytes &eod;
     #message: TagAndValue[] &eod;
 
