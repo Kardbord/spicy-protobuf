@@ -37,14 +37,15 @@ type TagAndValue = unit {
 #   0[0001]010 : varint payload, aka field number
 #   00001[010] : wire type (2, which is wire type LEN)
 type Tag = unit {
-    field_num: VarInt &convert=uint64($$.data);
-    wire_type: uint64 &convert=WireType($$) if (False);
+    tag: VarInt &convert=uint32($$.data);
+    var field_num: uint32;
+    var wire_type: WireType;
 
     on %done {
         # Last three bits are wire type
-        self.wire_type = WireType(self.field_num & 0x07);
+        self.wire_type = WireType(self.tag & 0x07);
         # Upper bits are field number
-        self.field_num = self.field_num >> 3;
+        self.field_num = self.tag >> 3;
     }
 };
 
