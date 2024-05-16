@@ -5,9 +5,7 @@ import spicy;
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
 public type Message = unit {
-    first_tag: TagAndValue;
-    the_rest: bytes &eod;
-    #message: TagAndValue[] &eod;
+    message: TagAndValue[] &eod;
 
     on %done {
         print self;
@@ -39,12 +37,15 @@ type TagAndValue = unit {
 #   0[0001]010 : varint payload, aka field number
 #   00001[010] : wire type (2, which is wire type LEN)
 type Tag = unit {
-    data: bitfield(8) {
-        ignore: 0;
-        field_number: 1..4;
-        wire_type: 5..7 &convert=WireType($$);
-    } &bit-order=spicy::BitOrder::MSB0;
-    # TODO
+    field_num: VarInt &convert=uint64($$.data);
+    wire_type: uint64 &convert=WireType($$) if (False);
+
+    on %done {
+        # Last three bits are wire type
+        self.wire_type = WireType(self.field_num & 0x07);
+        # Upper bits are field number
+        self.field_num = self.field_num >> 3;
+    }
 };
 
 # value := varint      for wire_type == VARINT,
@@ -54,28 +55,34 @@ type Tag = unit {
 #          <empty>     for wire_type == SGROUP or EGROUP
 #     A value is stored differently depending on the wire_type specified in the tag.
 type Value = unit(tag: Tag) {
-    switch(tag.data.wire_type) {
-        WireType::VARINT -> var_int : VarInt;
-        WireType::I32    -> i32     : I32;
-        WireType::I64    -> i64     : I64;
+    switch(tag.wire_type) {
+        WireType::VARINT -> varint : VarInt &convert=uint64($$.data);
+        WireType::I32    -> unimpl : bytes &eod;
+        WireType::I64    -> unimpl : bytes &eod;
+        WireType::LEN    -> unimpl : bytes &eod;
+        WireType::SGROUP -> unimpl : bytes &eod;
+        WireType::EGROUP -> unimpl : bytes &eod;
         # TODO - Finish switch for other types
     };
 };
 
+function parse_varint(buf: vector<uint8>) : uint64 {
+    local parsed: uint64 = 0;
+    local temp: uint64 = 0;
+    while (local i = 0; i < |buf|) {
+        # Drop continuation bit
+        temp = buf[i] & 0x7F; # Drop continuation bit
+        # Convert to big-endian
+        parsed = parsed | (temp << (i * 7));
+        ++i;
+    }
+    return parsed;
+}
+
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
 #     Encoded as varints (sintN are ZigZag-encoded first).
 type VarInt = unit {
-    data: VarIntOctet[] &until-including=(!($$.data.continuation_bit));
-};
-
-type VarIntOctet = unit {
-    data: bitfield(8) {
-        continuation_bit: 0;
-        payload: 1..7;
-    } &bit-order=spicy::BitOrder::MSB0;
-    on %done {
-        print "Continuation Bit: %d; little-endian payload: %d" %(self.data.continuation_bit, self.data.payload);
-    }
+    data: uint8[] &until-including=($$ < 0x80) &convert=parse_varint($$);
 };
 
 # i32 := sfixed32 | fixed32 | float
