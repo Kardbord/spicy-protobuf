@@ -5,9 +5,7 @@ import spicy;
 # message := (tag value)*
 #     A message is encoded as a sequence of zero or more pairs of tags and values.
 public type Message = unit {
-    first_field: TagAndValue;
-    the_rest: bytes &eod;
-    #message: TagAndValue[] &eod;
+    message: TagAndValue[] &eod;
 
     on %done {
         print self;
@@ -58,9 +56,12 @@ type Tag = unit {
 #     A value is stored differently depending on the wire_type specified in the tag.
 type Value = unit(tag: Tag) {
     switch(tag.wire_type) {
-        WireType::VARINT -> varint  : VarInt &convert=uint64($$.data);
-        WireType::I32    -> i32     : I32;
-        WireType::I64    -> i64     : I64;
+        WireType::VARINT -> varint : VarInt &convert=uint64($$.data);
+        WireType::I32    -> unimpl : bytes &eod;
+        WireType::I64    -> unimpl : bytes &eod;
+        WireType::LEN    -> unimpl : bytes &eod;
+        WireType::SGROUP -> unimpl : bytes &eod;
+        WireType::EGROUP -> unimpl : bytes &eod;
         # TODO - Finish switch for other types
     };
 };
