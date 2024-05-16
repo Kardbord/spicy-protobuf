@@ -44,10 +44,7 @@ type Tag = unit {
         field_number: 1..4;
         wire_type: 5..7 &convert=WireType($$);
     } &bit-order=spicy::BitOrder::MSB0;
-    # TODO
-    on %done {
-        print "ignore: '%d' field_num: '%d' wire_type: '%d'" % (self.data.ignore, self.data.field_number, self.data.wire_type);
-    }
+    # TODO: treat tag as uint32 VarInt
 };
 
 # value := varint      for wire_type == VARINT,
@@ -58,20 +55,30 @@ type Tag = unit {
 #     A value is stored differently depending on the wire_type specified in the tag.
 type Value = unit(tag: Tag) {
     switch(tag.data.wire_type) {
-        WireType::VARINT -> var_int : VarInt;
+        WireType::VARINT -> varint : VarInt;
         WireType::I32    -> i32     : I32;
         WireType::I64    -> i64     : I64;
         # TODO - Finish switch for other types
     };
 };
 
+function parse_varint(buf: vector<uint8>) : uint64 {
+    local parsed: uint64 = 0;
+    local temp: uint64 = 0;
+    while (local i = 0; i < |buf|) {
+        # Drop continuation bit
+        temp = buf[i] & 0x7F; # Drop continuation bit
+        # Convert to big-endian
+        parsed = parsed | (temp << (i * 7));
+        ++i;
+    }
+    return parsed;
+}
+
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
 #     Encoded as varints (sintN are ZigZag-encoded first).
 type VarInt = unit {
-    data: uint8[] &until-including=($$ < 0x80);
-    on %done {
-        print "VarInt Data=%s" % self.data;
-    }
+    data: uint8[] &until-including=($$ < 0x80) &convert=parse_varint($$);
 };
 
 # i32 := sfixed32 | fixed32 | float
