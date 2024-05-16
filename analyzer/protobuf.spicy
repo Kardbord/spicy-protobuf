@@ -39,12 +39,15 @@ type TagAndValue = unit {
 #   0[0001]010 : varint payload, aka field number
 #   00001[010] : wire type (2, which is wire type LEN)
 type Tag = unit {
-    data: bitfield(8) {
-        ignore: 0;
-        field_number: 1..4;
-        wire_type: 5..7 &convert=WireType($$);
-    } &bit-order=spicy::BitOrder::MSB0;
-    # TODO: treat tag as uint32 VarInt
+    field_num: VarInt;
+    wire_type: uint64 &convert=WireType($$) if (False);
+
+    on %done {
+        # Last three bits are wire type
+        self.wire_type = WireType(self.field_num.data & 0x07);
+        # Upper bits are field number
+        self.field_num.data = self.field_num.data >> 3;
+    }
 };
 
 # value := varint      for wire_type == VARINT,
@@ -54,7 +57,7 @@ type Tag = unit {
 #          <empty>     for wire_type == SGROUP or EGROUP
 #     A value is stored differently depending on the wire_type specified in the tag.
 type Value = unit(tag: Tag) {
-    switch(tag.data.wire_type) {
+    switch(tag.wire_type) {
         WireType::VARINT -> varint  : VarInt;
         WireType::I32    -> i32     : I32;
         WireType::I64    -> i64     : I64;
