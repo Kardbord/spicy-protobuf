@@ -1,6 +1,6 @@
 # Generate Test Data Directory
 
-This directory contains test files formatted as ascii text.  The `Protoscope` tool is leveraged to turn the text based files into protbuf raw binary data that can then be used to exercise the `spicy-protbuf` parsing capabilities.  
+This directory contains test files formatted as ascii text.  The `Protoscope` tool is leveraged to turn the text based files into protobuf raw binary data that can then be used to exercise the `spicy-protobuf` parsing capabilities.  
 
 See the `Protoscope` installation instructions located at the reference below.
 
