@@ -88,8 +88,8 @@ function build {
     done
 
     # TODO: Encapsulate tests within 'testing' directory
-    for raw in ../test-data/*.raw; do
-      cmd="spicy-driver ./*.hlto -f ${raw}"
+    for binpb in ../test-data/*.binpb; do
+      cmd="spicy-driver ./*.hlto -f ${binpb}"
       echo "============================================="
       echo "Running ${cmd}"
       echo "============================================="
