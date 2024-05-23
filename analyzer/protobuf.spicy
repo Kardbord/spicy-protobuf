@@ -8,9 +8,8 @@ public type Message = unit {
     message: TagAndValue[] &eod;
 
     on %done {
-        while (local i = 0; i < |self.message|) {
-            print self.message[i];
-            ++i;
+        for (val in self.message) {
+            print val;
         }
     }
 };
