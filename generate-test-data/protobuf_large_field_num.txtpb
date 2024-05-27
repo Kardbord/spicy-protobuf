@@ -1,0 +1,4 @@
+# These field tags do not fit into 5 bits, (remember the lower 3 bits are wire type)
+# and must be encoded as longer varints.
+63: 1
+1000: 1

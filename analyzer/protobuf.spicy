@@ -8,9 +8,8 @@ public type Message = unit {
     message: TagAndValue[] &eod;
 
     on %done {
-        while (local i = 0; i < |self.message|) {
-            print self.message[i];
-            ++i;
+        for (val in self.message) {
+            print val;
         }
     }
 };
@@ -40,7 +39,7 @@ type TagAndValue = unit {
 #   0[0001]010 : varint payload, aka field number
 #   00001[010] : wire type (2, which is wire type LEN)
 type Tag = unit {
-    tag: VarInt &convert=uint32($$.data);
+    tag: VarInt &convert=uint32($$.as_unsigned);
     var field_num: uint32;
     var wire_type: WireType;
 
@@ -60,7 +59,7 @@ type Tag = unit {
 #     A value is stored differently depending on the wire_type specified in the tag.
 type Value = unit(tag: Tag) {
     switch(tag.wire_type) {
-        WireType::VARINT -> varint : VarInt &convert=uint64($$.data);
+        WireType::VARINT -> varint : VarInt;
         WireType::I32    -> unimpl : bytes &eod;
         WireType::I64    -> unimpl : bytes &eod;
         WireType::LEN    -> unimpl : bytes &eod;
@@ -83,10 +82,63 @@ function parse_varint(buf: vector<uint8>) : uint64 {
     return parsed;
 }
 
+# TODO: Surely there's a better way...
+function to_bytes(u: uint64) : bytes {
+    local out: bytes;
+    out += uint8((u >> 56) & 0xFF);
+    out += uint8((u >> 48) & 0xFF);
+    out += uint8((u >> 40) & 0xFF);
+    out += uint8((u >> 32) & 0xFF);
+    out += uint8((u >> 24) & 0xFF);
+    out += uint8((u >> 16) & 0xFF);
+    out += uint8((u >>  8) & 0xFF);
+    out += uint8((u >>  0) & 0xFF);
+    return out;
+}
+
+# ZigZag encodes positive and negative integers according
+# to the following rules:
+#   1. If a decimal value (n) is positive, the ZigZag
+#      encoding (z) is given by
+#      z = 2 * n
+#   2. If a decimal value (n) is negative, the ZigZag
+#      encoding (z) is given by
+#      z = 2 * |n| - 1.
+# The implication is that the least-significant bit is the sign-bit.
+# This means we can determine how to decode a number using the rules
+# above based on whether or not the least-significant bit is set.
+# We can decode using the following rules:
+#   1. If a ZigZag value (z) does not have the sign bit set,
+#      then the decimal representation (n) is given by
+#      n = z / 2.
+#   2. If a ZigZag value (z) has the sign bit set, then
+#      the decimal representation (n) is given by
+#      n = ((z + 1) / 2) * -1
+function parse_zigzag(u: uint64) : int64 {
+    if (u & 1 == 0) {
+        return to_bytes((u >> 1)).to_int(spicy::ByteOrder::Big);
+    }
+    return to_bytes(~(u >> 1)).to_int(spicy::ByteOrder::Big);
+}
+
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
 #     Encoded as varints (sintN are ZigZag-encoded first).
 type VarInt = unit {
     data: uint8[] &until-including=($$ < 0x80) &convert=parse_varint($$);
+
+    # Without the schema for a given message, it is not possible to tell
+    # with certainty whether a VarInt is unsigned or signed, and if it is
+    # signed, the encoding used. As such, the three possibilities are all
+    # presented.
+    var as_unsigned        : uint64; # self.data as an unsigned integer
+    var as_twos_compliment : int64;  # self.data as a signed integer using two's compliment
+    var as_zigzag          : int64;  # self.data as a signed integer using zig-zag encoding
+
+    on %done {
+        self.as_unsigned        = self.data;
+        self.as_twos_compliment = to_bytes(self.data).to_int(spicy::ByteOrder::Big);
+        self.as_zigzag          = parse_zigzag(self.data);
+    }
 };
 
 # i32 := sfixed32 | fixed32 | float
