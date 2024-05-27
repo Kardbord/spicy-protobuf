@@ -96,6 +96,13 @@ function to_bytes(u: uint64) : bytes {
     return out;
 }
 
+function parse_zigzag(u: uint64) : int64 {
+    if (u & 1 == 0) {
+        return to_bytes((u >> 1)).to_int(spicy::ByteOrder::Big);
+    }
+    return to_bytes(~(u >> 1)).to_int(spicy::ByteOrder::Big);
+}
+
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
 #     Encoded as varints (sintN are ZigZag-encoded first).
 type VarInt = unit {
@@ -108,7 +115,7 @@ type VarInt = unit {
     on %done {
         self.as_unsigned        = self.data;
         self.as_twos_compliment = to_bytes(self.data).to_int(spicy::ByteOrder::Big);
-        #self.as_zigzag          = int64(((self.data >> 1 ) ^ (~(self.data & 1) + 1)));
+        self.as_zigzag          = parse_zigzag(self.data);
     }
 };
 
