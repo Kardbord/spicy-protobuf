@@ -112,13 +112,13 @@ function to_bytes(u: uint64) : bytes {
 #      then the decimal representation (n) is given by
 #      n = z / 2.
 #   2. If a ZigZag value (z) has the sign bit set, then
-#      the decimal representation (|n|) is given by
-#      |n| = (z + 1) / 2
+#      the decimal representation (n) is given by
+#      n = ((z + 1) / 2) * -1
 function parse_zigzag(u: uint64) : int64 {
     if (u & 1 == 0) {
         return to_bytes((u >> 1)).to_int(spicy::ByteOrder::Big);
     }
-    return (to_bytes((u + 1) >> 1).to_int(spicy::ByteOrder::Big)) * -1;
+    return to_bytes(~(u >> 1)).to_int(spicy::ByteOrder::Big);
 }
 
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
