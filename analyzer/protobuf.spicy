@@ -96,11 +96,29 @@ function to_bytes(u: uint64) : bytes {
     return out;
 }
 
+# ZigZag encodes positive and negative integers according
+# to the following rules:
+#   1. If a decimal value (n) is positive, the ZigZag
+#      encoding (z) is given by
+#      z = 2 * n
+#   2. If a decimal value (n) is negative, the ZigZag
+#      encoding (z) is given by
+#      z = 2 * |n| - 1.
+# The implication is that the least-significant bit is the sign-bit.
+# This means we can determine how to decode a number using the rules
+# above based on whether or not the least-significant bit is set.
+# We can decode using the following rules:
+#   1. If a ZigZag value (z) does not have the sign bit set,
+#      then the decimal representation (n) is given by
+#      n = z / 2.
+#   2. If a ZigZag value (z) has the sign bit set, then
+#      the decimal representation (|n|) is given by
+#      |n| = (z + 1) / 2
 function parse_zigzag(u: uint64) : int64 {
     if (u & 1 == 0) {
         return to_bytes((u >> 1)).to_int(spicy::ByteOrder::Big);
     }
-    return to_bytes(~(u >> 1)).to_int(spicy::ByteOrder::Big);
+    return (to_bytes((u + 1) >> 1).to_int(spicy::ByteOrder::Big)) * -1;
 }
 
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
