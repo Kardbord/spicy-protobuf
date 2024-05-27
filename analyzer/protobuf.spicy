@@ -108,6 +108,10 @@ function parse_zigzag(u: uint64) : int64 {
 type VarInt = unit {
     data: uint8[] &until-including=($$ < 0x80) &convert=parse_varint($$);
 
+    # Without the schema for a given message, it is not possible to tell
+    # with certainty whether a VarInt is unsigned or signed, and if it is
+    # signed, the encoding used. As such, the three possibilities are all
+    # presented.
     var as_unsigned        : uint64; # self.data as an unsigned integer
     var as_twos_compliment : int64;  # self.data as a signed integer using two's compliment
     var as_zigzag          : int64;  # self.data as a signed integer using zig-zag encoding
