@@ -82,6 +82,20 @@ function parse_varint(buf: vector<uint8>) : uint64 {
     return parsed;
 }
 
+# TODO: Surely there's a better way...
+function to_bytes(u: uint64) : bytes {
+    local out: bytes;
+    out += uint8((u >> 56) & 0xFF);
+    out += uint8((u >> 48) & 0xFF);
+    out += uint8((u >> 40) & 0xFF);
+    out += uint8((u >> 32) & 0xFF);
+    out += uint8((u >> 24) & 0xFF);
+    out += uint8((u >> 16) & 0xFF);
+    out += uint8((u >>  8) & 0xFF);
+    out += uint8((u >>  0) & 0xFF);
+    return out;
+}
+
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
 #     Encoded as varints (sintN are ZigZag-encoded first).
 type VarInt = unit {
@@ -93,8 +107,8 @@ type VarInt = unit {
 
     on %done {
         self.as_unsigned        = self.data;
-        self.as_twos_compliment = int64(self.data);
-        self.as_zigzag          = int64(((self.data >> 1 ) ^ (~(self.data & 1) + 1)));
+        self.as_twos_compliment = to_bytes(self.data).to_int(spicy::ByteOrder::Big);
+        #self.as_zigzag          = int64(((self.data >> 1 ) ^ (~(self.data & 1) + 1)));
     }
 };
 
