@@ -114,16 +114,19 @@ type VarInt = unit {
 
     # Without the schema for a given message, it is not possible to tell
     # with certainty whether a VarInt is unsigned or signed, and if it is
-    # signed, the encoding used. As such, the three possibilities are all
+    # signed, the encoding used. As such, the four possibilities are all
     # presented.
-    var as_unsigned        : uint64; # self.data as an unsigned integer
-    var as_twos_compliment : int64;  # self.data as a signed integer using two's compliment
-    var as_zigzag          : int64;  # self.data as a signed integer using zig-zag encoding
+    var as_unsigned          : uint64; # self.data as an unsigned integer
+    var as_zigzag            : int64;  # self.data as a signed integer using zig-zag encoding
+    var as_twos_compliment64 : int64;  # self.data as a signed 64-bit integer using two's compliment
+    var as_twos_compliment32 : int64;  # self.data as a signed 32-bit integer using two's compliment.
+                                       # Note that this may be a truncated value if more than 32 bits are set in the VarInt.
 
     on %done {
-        self.as_unsigned        = self.data;
-        self.as_twos_compliment = pack(self.data, spicy::ByteOrder::Big).to_int(spicy::ByteOrder::Big);
-        self.as_zigzag          = parse_zigzag(self.data);
+        self.as_unsigned          = self.data;
+        self.as_twos_compliment64 = pack(self.data, spicy::ByteOrder::Big).to_int(spicy::ByteOrder::Big);
+        self.as_twos_compliment32 = unpack<int32>(pack(self.data << 32, spicy::ByteOrder::Big), spicy::ByteOrder::Big)[0];
+        self.as_zigzag            = parse_zigzag(self.data);
     }
 };
 
