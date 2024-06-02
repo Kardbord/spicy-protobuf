@@ -82,20 +82,6 @@ function parse_varint(buf: vector<uint8>) : uint64 {
     return parsed;
 }
 
-# TODO: Surely there's a better way...
-function to_bytes(u: uint64) : bytes {
-    local out: bytes;
-    out += uint8((u >> 56) & 0xFF);
-    out += uint8((u >> 48) & 0xFF);
-    out += uint8((u >> 40) & 0xFF);
-    out += uint8((u >> 32) & 0xFF);
-    out += uint8((u >> 24) & 0xFF);
-    out += uint8((u >> 16) & 0xFF);
-    out += uint8((u >>  8) & 0xFF);
-    out += uint8((u >>  0) & 0xFF);
-    return out;
-}
-
 # ZigZag encodes positive and negative integers according
 # to the following rules:
 #   1. If a decimal value (n) is positive, the ZigZag
@@ -116,9 +102,9 @@ function to_bytes(u: uint64) : bytes {
 #      n = ((z + 1) / 2) * -1
 function parse_zigzag(u: uint64) : int64 {
     if (u & 1 == 0) {
-        return to_bytes((u >> 1)).to_int(spicy::ByteOrder::Big);
+        return pack(u >> 1, spicy::ByteOrder::Big).to_int(spicy::ByteOrder::Big);
     }
-    return to_bytes(~(u >> 1)).to_int(spicy::ByteOrder::Big);
+    return pack(~(u >> 1), spicy::ByteOrder::Big).to_int(spicy::ByteOrder::Big);
 }
 
 # varint := int32 | int64 | uint32 | uint64 | bool | enum | sint32 | sint64
@@ -128,16 +114,19 @@ type VarInt = unit {
 
     # Without the schema for a given message, it is not possible to tell
     # with certainty whether a VarInt is unsigned or signed, and if it is
-    # signed, the encoding used. As such, the three possibilities are all
+    # signed, the encoding used. As such, the four possibilities are all
     # presented.
-    var as_unsigned        : uint64; # self.data as an unsigned integer
-    var as_twos_compliment : int64;  # self.data as a signed integer using two's compliment
-    var as_zigzag          : int64;  # self.data as a signed integer using zig-zag encoding
+    var as_unsigned          : uint64; # self.data as an unsigned integer
+    var as_zigzag            : int64;  # self.data as a signed integer using zig-zag encoding
+    var as_twos_compliment64 : int64;  # self.data as a signed 64-bit integer using two's compliment
+    var as_twos_compliment32 : int64;  # self.data as a signed 32-bit integer using two's compliment.
+                                       # Note that this may be a truncated value if more than 32 bits are set in the VarInt.
 
     on %done {
-        self.as_unsigned        = self.data;
-        self.as_twos_compliment = to_bytes(self.data).to_int(spicy::ByteOrder::Big);
-        self.as_zigzag          = parse_zigzag(self.data);
+        self.as_unsigned          = self.data;
+        self.as_twos_compliment64 = pack(self.data, spicy::ByteOrder::Big).to_int(spicy::ByteOrder::Big);
+        self.as_twos_compliment32 = unpack<int32>(pack(self.data << 32, spicy::ByteOrder::Big), spicy::ByteOrder::Big)[0];
+        self.as_zigzag            = parse_zigzag(self.data);
     }
 };
 
