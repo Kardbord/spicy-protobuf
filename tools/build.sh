@@ -88,7 +88,8 @@ function build {
     done
 
     # TODO: Encapsulate tests within 'testing' directory
-    for binpb in ../test-data/*.binpb; do
+    # shellcheck disable=SC2044
+    for binpb in $(find ../test-data/ -name '*.binpb'); do
       cmd="spicy-driver ./*.hlto -f ${binpb}"
       echo "============================================="
       echo "Running ${cmd}"
