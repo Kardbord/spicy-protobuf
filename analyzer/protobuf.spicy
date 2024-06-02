@@ -60,8 +60,8 @@ type Tag = unit {
 type Value = unit(tag: Tag) {
     switch(tag.wire_type) {
         WireType::VARINT -> varint : VarInt;
-        WireType::I32    -> unimpl : bytes &eod;
-        WireType::I64    -> unimpl : bytes &eod;
+        WireType::I32    -> i32    : I32;
+        WireType::I64    -> i64    : I64;
         WireType::LEN    -> unimpl : bytes &eod;
         WireType::SGROUP -> unimpl : bytes &eod;
         WireType::EGROUP -> unimpl : bytes &eod;
@@ -134,14 +134,34 @@ type VarInt = unit {
 #     Encoded as 4-byte little-endian.
 #     memcpy of the equivalent C types (u?int32_t, float)
 type I32 = unit {
-    # TODO
+    data: uint32 &byte-order=spicy::ByteOrder::Little;
+
+    var as_unsigned        : uint32;
+    var as_twos_compliment : int32;
+    var as_float           : real;
+
+    on %done {
+        self.as_unsigned        = self.data;
+        self.as_twos_compliment = unpack<int32>(pack(self.data, spicy::ByteOrder::Big), spicy::ByteOrder::Big)[0];
+        self.as_float           = unpack<real>(pack(self.data, spicy::ByteOrder::Big), spicy::RealType::IEEE754_Single, spicy::ByteOrder::Big)[0];
+    }
 };
 
 # i64 := sfixed64 | fixed64 | double
 #     Encoded as 8-byte little-endian.
 #     memcpy of the equivalent C types (u?int64_t, double)
 type I64 = unit {
-    # TODO
+    data: uint64 &byte-order=spicy::ByteOrder::Little;
+
+    var as_unsigned        : uint64;
+    var as_twos_compliment : int64;
+    var as_double          : real;
+
+    on %done {
+        self.as_unsigned        = self.data;
+        self.as_twos_compliment = unpack<int64>(pack(self.data, spicy::ByteOrder::Big), spicy::ByteOrder::Big)[0];
+        self.as_double          = unpack<real>(pack(self.data, spicy::ByteOrder::Big), spicy::RealType::IEEE754_Double, spicy::ByteOrder::Big)[0];
+    }
 };
 
 # len-prefix := size (message | string | bytes | packed)
