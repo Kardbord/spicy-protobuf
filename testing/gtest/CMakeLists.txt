@@ -1,3 +1,4 @@
+# Generate C++ sources from spicy
 set(SPICYC_GENERATED_SRC ${CMAKE_CURRENT_BINARY_DIR}/spicy_protobuf.cc
                          ${CMAKE_CURRENT_BINARY_DIR}/spicy___linker__.cc)
 set(SPICYC_SRC_CMD ${SPICYC} -x ${CMAKE_CURRENT_BINARY_DIR}/spicy
@@ -9,6 +10,7 @@ add_custom_command(
   MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy
   VERBATIM COMMAND_EXPAND_LISTS)
 
+# Generate C++ headers from spicy
 set(SPICYC_GENERATED_HDR ${CMAKE_CURRENT_BINARY_DIR}/spicy_protobuf.h)
 set(SPICYC_HDR_CMD ${SPICYC} -P ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy
                    -o ${SPICYC_GENERATED_HDR})
@@ -19,6 +21,29 @@ add_custom_command(
   MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy
   VERBATIM COMMAND_EXPAND_LISTS)
 
+# Generated embedded test-data C++ headers
+find_program(XXD xxd REQUIRED)
+find_program(PRINTF printf REQUIRED)
+file(GLOB_RECURSE BINPB CONFIGURE_DEPENDS *.binpb)
+foreach(INPUT_BINPB ${BINPB})
+  string(REPLACE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+                 XXD_OUTPUT_HDR ${INPUT_BINPB})
+  string(REPLACE ".binpb" ".h" XXD_OUTPUT_HDR ${XXD_OUTPUT_HDR})
+  string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/test-data/" "" XXD_INPUT_BINPB
+                 ${INPUT_BINPB})
+  set(XXD_HDR_CMD ${XXD} -i ${XXD_INPUT_BINPB} >> ${XXD_OUTPUT_HDR})
+  add_custom_command(
+    OUTPUT ${XXD_OUTPUT_HDR}
+    COMMAND ${PRINTF} "#pragma once\\n\\n" > ${XXD_OUTPUT_HDR}
+    COMMAND ${XXD_HDR_CMD}
+    COMMENT ${XXD_HDR_CMD}
+    MAIN_DEPENDENCY ${INPUT_BINPB}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/test-data/"
+    VERBATIM COMMAND_EXPAND_LISTS)
+  list(APPEND XXD_GENERATED_HDR ${XXD_OUTPUT_HDR})
+endforeach()
+
+# Pull down gtest library
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -28,9 +53,13 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 include(GoogleTest)
 
-add_executable(${CMAKE_PROJECT_NAME}_test protobuf.cpp ${SPICYC_GENERATED_SRC}
-                                          ${SPICYC_GENERATED_HDR})
+# Create gtest executable
+add_executable(
+  ${CMAKE_PROJECT_NAME}_test protobuf.cpp ${SPICYC_GENERATED_SRC}
+                             ${SPICYC_GENERATED_HDR} ${XXD_GENERATED_HDR})
 target_link_libraries(${CMAKE_PROJECT_NAME}_test PRIVATE gtest_main spicy hilti)
 target_include_directories(${CMAKE_PROJECT_NAME}_test
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+# Register with ctest
 gtest_discover_tests(${CMAKE_PROJECT_NAME}_test)
