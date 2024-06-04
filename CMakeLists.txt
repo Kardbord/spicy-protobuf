@@ -22,5 +22,5 @@ endif()
 add_subdirectory(analyzer)
 
 # if(SPICY_PROTOBUF_TEST)
-add_subdirectory(testing/gtest)
+add_subdirectory(testing)
 # endif()
