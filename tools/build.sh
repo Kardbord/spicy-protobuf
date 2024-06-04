@@ -96,8 +96,8 @@ function build {
       echo "============================================="
       eval "${cmd}"
     done
-    #pushd "../testing/" >/dev/null
-    #make
+    #pushd "../testing/btest" >/dev/null
+    #btest -c btest.cfg
     #popd >/dev/null
   fi
 }
