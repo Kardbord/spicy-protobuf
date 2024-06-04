@@ -1,10 +1,37 @@
 #include <gtest/gtest.h>
+#include <hilti/rt/init.h>
+#include <spicy/rt/init.h>
+#include <spicy_protobuf.h>
 
-// Demonstrate some basic assertions.
-TEST(HelloTest, BasicAssertions) {
-  // Expect two strings not to be equal.
-  EXPECT_STRNE("hello", "world");
-  // Expect equality.
-  EXPECT_EQ(7 * 6, 42);
+namespace { // anonymous namespace
+
+class SpicyProtobufTest : public ::testing::Test {
+protected:
+  static void SetUpTestSuite();
+  static void TearDownTestSuite();
+
+  void SetUp() override;
+  void TearDown() override;
+};
+
+void SpicyProtobufTest::SetUpTestSuite() {
+  // Initialize runtime libraries
+  ::hilti::rt::init();
+  ::spicy::rt::init();
 }
 
+void SpicyProtobufTest::TearDownTestSuite() {
+  // Tear down runtime libraries
+  ::spicy::rt::done();
+  ::hilti::rt::done();
+}
+
+void SpicyProtobufTest::SetUp() {
+
+}
+
+void SpicyProtobufTest::TearDown() {
+
+}
+
+} // anonymous namespace
