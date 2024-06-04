@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(protobuf LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 
-# option(SPICY_PROTOBUF_TEST "Include unit tests in the build" OFF)
+option(SPICY_PROTOBUF_TEST "Include unit tests in the build" OFF)
 
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 find_package(SpicyPlugin REQUIRED)
@@ -21,6 +21,6 @@ endif()
 
 add_subdirectory(analyzer)
 
-# if(SPICY_PROTOBUF_TEST)
-add_subdirectory(testing)
-# endif()
+if(SPICY_PROTOBUF_TEST)
+  add_subdirectory(testing)
+endif()

@@ -25,6 +25,12 @@ To more easily view the contents of a .binpb file:
 hexdump -C <test-file.binpb>
 ```
 
+To feed a .binpb file into the generated spicy code:
+
+```bash
+spicy-driver <*.hlto> -f <test-file.binpb>
+```
+
 See the `Protoscope` [test data](https://github.com/protocolbuffers/protoscope/tree/main/testdata) directory for additional examples.  Specifically, the `*.golden` files.
 
 ## References

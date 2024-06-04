@@ -55,7 +55,7 @@ include(GoogleTest)
 
 # Create gtest executable
 add_executable(
-  ${CMAKE_PROJECT_NAME}_test protobuf.cpp ${SPICYC_GENERATED_SRC}
+  ${CMAKE_PROJECT_NAME}_test SpicyProtobufTest.cpp ${SPICYC_GENERATED_SRC}
                              ${SPICYC_GENERATED_HDR} ${XXD_GENERATED_HDR})
 target_link_libraries(${CMAKE_PROJECT_NAME}_test PRIVATE gtest_main spicy hilti)
 target_include_directories(${CMAKE_PROJECT_NAME}_test
