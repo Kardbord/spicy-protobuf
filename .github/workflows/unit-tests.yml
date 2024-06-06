@@ -1,0 +1,84 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container:
+      image: zeek/zeek:6.2.1
+
+    strategy:
+      fail-fast: true
+
+      # Set up a matrix to run the following 3 configurations:
+      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, make and ninja generators>
+      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, make and ninja generators>
+      matrix:
+        build_type: [Release]
+        c_compiler: [gcc, clang]
+        cpp_compiler: [g++, clang++]
+        generator: [Unix Makefiles, Ninja]
+        include:
+          - build_type: Release
+            c_compiler: gcc
+            cpp_compiler: g++
+            generator: Unix Makefiles
+          - build_type: Release
+            c_compiler: gcc
+            cpp_compiler: g++
+            generator: Ninja
+          - build_type: Release
+            c_compiler: clang
+            cpp_compiler: clang++
+            generator: Unix Makefiles
+          - build_type: Release
+            c_compiler: clang
+            cpp_compiler: clang++
+            generator: Ninja
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install build dependencies
+      run: >
+          apt update -y
+          apt install -y
+            clang
+            cmake
+            gcc
+            make
+            ninja-build
+            xxd
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -G "${{ matrix.generator }}"
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DSPICY_PROTOBUF_TEST=ON
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}/testing/gtest/
+      run: ctest --build-config ${{ matrix.build_type }}
