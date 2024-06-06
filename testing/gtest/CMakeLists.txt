@@ -45,6 +45,8 @@ foreach(INPUT_BINPB ${BINPB})
   string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/test-data/" "" XXD_INPUT_BINPB
                  ${INPUT_BINPB})
   set(XXD_HDR_CMD ${XXD} -i ${XXD_INPUT_BINPB} >> ${XXD_OUTPUT_HDR})
+  get_filename_component(BINPB_DIR ${XXD_OUTPUT_HDR} DIRECTORY)
+  file(MAKE_DIRECTORY ${BINPB_DIR})
   add_custom_command(
     OUTPUT ${XXD_OUTPUT_HDR}
     COMMAND ${PRINTF} "#pragma once\\n\\n" > ${XXD_OUTPUT_HDR}
