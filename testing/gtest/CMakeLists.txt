@@ -1,8 +1,8 @@
 # Generate C++ sources from spicy
-set(SPICYC_GENERATED_SRC ${CMAKE_CURRENT_BINARY_DIR}/spicy_protobuf.cc
-                         ${CMAKE_CURRENT_BINARY_DIR}/spicy___linker__.cc)
-set(SPICYC_SRC_CMD ${SPICYC} -x ${CMAKE_CURRENT_BINARY_DIR}/spicy
-                   ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy)
+set(SPICYC_GENERATED_SRC ${CMAKE_CURRENT_BINARY_DIR}/spicy_protobuf.cc)
+set(SPICYC_SRC_CMD
+    ${SPICYC} -c -g ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy -o
+    ${SPICYC_GENERATED_SRC})
 add_custom_command(
   OUTPUT ${SPICYC_GENERATED_SRC}
   COMMAND ${SPICYC_SRC_CMD}
@@ -10,10 +10,23 @@ add_custom_command(
   MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy
   VERBATIM COMMAND_EXPAND_LISTS)
 
+# Generate C++ linker glue from spicy
+set(SPICYC_GENERATED_LNK ${CMAKE_CURRENT_BINARY_DIR}/spicy_linker.cc)
+set(SPICYC_LNK_CMD
+    ${SPICYC} -l -g ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy -o
+    ${SPICYC_GENERATED_LNK})
+add_custom_command(
+  OUTPUT ${SPICYC_GENERATED_LNK}
+  COMMAND ${SPICYC_LNK_CMD}
+  COMMENT ${SPICYC_LNK_CMD}
+  MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy
+  VERBATIM COMMAND_EXPAND_LISTS)
+
 # Generate C++ headers from spicy
 set(SPICYC_GENERATED_HDR ${CMAKE_CURRENT_BINARY_DIR}/spicy_protobuf.h)
-set(SPICYC_HDR_CMD ${SPICYC} -P ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy
-                   -o ${SPICYC_GENERATED_HDR})
+set(SPICYC_HDR_CMD
+    ${SPICYC} -P -g ${PROJECT_SOURCE_DIR}/analyzer/protobuf.spicy -o
+    ${SPICYC_GENERATED_HDR})
 add_custom_command(
   OUTPUT ${SPICYC_GENERATED_HDR}
   COMMAND ${SPICYC_HDR_CMD}
@@ -55,8 +68,9 @@ include(GoogleTest)
 
 # Create gtest executable
 add_executable(
-  ${CMAKE_PROJECT_NAME}_test SpicyProtobufTest.cpp ${SPICYC_GENERATED_SRC}
-                             ${SPICYC_GENERATED_HDR} ${XXD_GENERATED_HDR})
+  ${CMAKE_PROJECT_NAME}_test
+  SpicyProtobufTest.cpp ${SPICYC_GENERATED_SRC} ${SPICYC_GENERATED_LNK}
+  ${SPICYC_GENERATED_HDR} ${XXD_GENERATED_HDR})
 target_link_libraries(${CMAKE_PROJECT_NAME}_test PRIVATE gtest_main spicy hilti)
 target_include_directories(${CMAKE_PROJECT_NAME}_test
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
