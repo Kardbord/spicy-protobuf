@@ -27,23 +27,11 @@ jobs:
         c_compiler: [gcc, clang]
         cpp_compiler: [g++, clang++]
         generator: [Unix Makefiles, Ninja]
-        include:
-          - build_type: Release
-            c_compiler: gcc
-            cpp_compiler: g++
-            generator: Unix Makefiles
-          - build_type: Release
-            c_compiler: gcc
-            cpp_compiler: g++
-            generator: Ninja
-          - build_type: Release
-            c_compiler: clang
+        exclude:
+          - c_compiler: gcc
             cpp_compiler: clang++
-            generator: Unix Makefiles
-          - build_type: Release
-            c_compiler: clang
-            cpp_compiler: clang++
-            generator: Ninja
+          - c_compiler: clang
+            cpp_compiler: g++
 
     steps:
     - uses: actions/checkout@v4
