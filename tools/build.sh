@@ -80,7 +80,7 @@ function build {
   "${builder}" ${MAKE_ARGS[*]}
   if [[ "${UNIT_TESTS}" = 1 ]]; then
     pushd "testing/gtest" >/dev/null
-    ctest --progress
+    ctest --progress -V
     popd >/dev/null
     #pushd "../testing/btest" >/dev/null
     #btest -c btest.cfg
