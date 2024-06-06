@@ -76,8 +76,8 @@ jobs:
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -G "${{ matrix.generator }}"
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_CXX_COMPILER=/usr/bin/${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=/usr/bin/${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DSPICY_PROTOBUF_TEST=ON
         -S ${{ env.GITHUB_WORKSPACE }}
