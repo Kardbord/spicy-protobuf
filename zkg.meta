@@ -1,6 +1,6 @@
 [package]
 script_dir = scripts
-test_command = cd testing && btest -c btest.cfg
+test_command = cd testing/btest && btest -c btest.cfg
 summary = Spicy-based analyzer for Google Protocol Buffers
 description = Spicy-based analyzer for Google Protocol Buffers
 depends = 

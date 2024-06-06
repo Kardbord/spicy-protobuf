@@ -8,7 +8,7 @@ WD="$(dirname "${BASH_SOURCE[0]}")/../build"
 
 FROM_SCRATCH=0
 UNIT_TESTS=0
-CMAKE_ARGS=()
+CMAKE_ARGS=("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON")
 MAKE_ARGS=()
 
 function usage() {
@@ -45,6 +45,7 @@ function process_args() {
         ;;
       t)
         UNIT_TESTS=1
+        CMAKE_ARGS+=("-DSPICY_PROTOBUF_TEST=ON")
         ;;
       *)
         usage
@@ -78,26 +79,11 @@ function build {
   #shellcheck disable=SC2048,2086
   "${builder}" ${MAKE_ARGS[*]}
   if [[ "${UNIT_TESTS}" = 1 ]]; then
-    for t in ./tests/*_test; do
-      if [[ -x "${t}" ]]; then
-        echo "============================================="
-        echo "Running ${t}"
-        echo "============================================="
-        "${t}"
-      fi
-    done
-
-    # TODO: Encapsulate tests within 'testing' directory
-    # shellcheck disable=SC2044
-    for binpb in $(find ../test-data/ -name '*.binpb'); do
-      cmd="spicy-driver ./*.hlto -f ${binpb}"
-      echo "============================================="
-      echo "Running ${cmd}"
-      echo "============================================="
-      eval "${cmd}"
-    done
-    #pushd "../testing/" >/dev/null
-    #make
+    pushd "testing/gtest" >/dev/null
+    ctest --progress -V
+    popd >/dev/null
+    #pushd "../testing/btest" >/dev/null
+    #btest -c btest.cfg
     #popd >/dev/null
   fi
 }

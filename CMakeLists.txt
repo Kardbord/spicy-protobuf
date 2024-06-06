@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
-project(protobuf LANGUAGES C)
+project(protobuf LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 17)
+
+option(SPICY_PROTOBUF_TEST "Include unit tests in the build" OFF)
 
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 find_package(SpicyPlugin REQUIRED)
@@ -10,9 +13,15 @@ find_package(SpicyPlugin REQUIRED)
 # spicy_plugin_require_version("0.99.0")
 # zeek_require_version("5.0.0")
 
-if (NOT CMAKE_BUILD_TYPE)
-    # Default to release build.
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
-endif ()
+if(NOT CMAKE_BUILD_TYPE)
+  # Default to release build.
+  set(CMAKE_BUILD_TYPE
+      "Release"
+      CACHE STRING "")
+endif()
 
 add_subdirectory(analyzer)
+
+if(SPICY_PROTOBUF_TEST)
+  add_subdirectory(testing)
+endif()

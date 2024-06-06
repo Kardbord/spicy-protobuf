@@ -1,5 +1,7 @@
 # spicy-protobuf
 
+[![Unit Tests](https://github.com/Kardbord/spicy-protobuf/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/Kardbord/spicy-protobuf/actions/workflows/unit-tests.yml)
+
 This repository contains a Spicy-based analyzer for Google Protocol Buffers.
 
 ## References
