@@ -48,9 +48,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Update package cache
+      run: apt update -y
+
     - name: Install build dependencies
       run: >
-          apt update -y
           apt install -y
             clang
             cmake
