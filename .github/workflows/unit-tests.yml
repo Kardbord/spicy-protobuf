@@ -60,6 +60,7 @@ jobs:
           apt install -y
           clang
           cmake
+          g++
           gcc
           make
           ninja-build
