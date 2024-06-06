@@ -79,8 +79,9 @@ function build {
   #shellcheck disable=SC2048,2086
   "${builder}" ${MAKE_ARGS[*]}
   if [[ "${UNIT_TESTS}" = 1 ]]; then
-    pushd "testing/gtest"
+    pushd "testing/gtest" >/dev/null
     ctest --progress
+    popd >/dev/null
     #pushd "../testing/btest" >/dev/null
     #btest -c btest.cfg
     #popd >/dev/null
