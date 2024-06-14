@@ -1,11 +1,12 @@
 #include <cmath>
-#include <math.h>
 #include <gtest/gtest.h>
 #include <hilti/rt/libhilti.h>
 #include <hilti/rt/types/reference.h>
+#include <math.h>
 #include <spicy/rt/libspicy.h>
 #include <spicy_protobuf.h>
 #include <test-data/i32/protobuf_i32.h>
+#include <test-data/i64/protobuf_i64.h>
 #include <test-data/varint/protobuf_150.h>
 #include <test-data/varint/protobuf_1500.h>
 #include <test-data/varint/protobuf_1500000.h>
@@ -285,11 +286,9 @@ TEST_F(SpicyProtobufTest, TestVarIntZigZag) {
   }
 }
 
-TEST_F(SpicyProtobufTest, Testi32) {
+TEST_F(SpicyProtobufTest, TestI32) {
   using namespace __hlt::protobuf;
 
-  const float abs_err = 0.00001;
-  
   // protobuf_i32
   auto p_data = parseMessage(reinterpret_cast<const char *>(i32_protobuf_i32_binpb), i32_protobuf_i32_binpb_len);
   auto p_msg = p_data->message;
@@ -580,6 +579,263 @@ TEST_F(SpicyProtobufTest, Testi32) {
     EXPECT_EQ(tag_and_val.value.value()->i32.value()->as_unsigned, 3273005466);
     EXPECT_EQ(tag_and_val.value.value()->i32.value()->as_twos_compliment, -1021961830);
     EXPECT_FLOAT_EQ(tag_and_val.value.value()->i32.value()->as_float, -150.1);
+  }
+
+}
+
+TEST_F(SpicyProtobufTest, TestI64) {
+  using namespace __hlt::protobuf;
+
+  // protobuf_i64
+  auto p_data = parseMessage(reinterpret_cast<const char *>(i64_protobuf_i64_binpb), i64_protobuf_i64_binpb_len);
+  auto p_msg = p_data->message;
+  ASSERT_EQ(p_msg->size(), 24);
+
+  { // field 1
+    auto tag_and_val = p_data->message->at(0);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 1);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 0);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 0);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_double, 0.0);
+  }
+
+  { // field 2
+    auto tag_and_val = p_data->message->at(1);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 2);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 1);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 1);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 4.94066e-324);
+  }
+
+  { // field 3
+    auto tag_and_val = p_data->message->at(2);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 3);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 18446744073709551615u);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, -1);
+    EXPECT_TRUE(std::isnan(tag_and_val.value.value()->i64.value()->as_double));
+    EXPECT_TRUE(std::signbit(tag_and_val.value.value()->i64.value()->as_double));
+  }
+
+  { // field 4
+    auto tag_and_val = p_data->message->at(3);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 4);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 18446744073709551615u);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, -1);
+    EXPECT_TRUE(std::isnan(tag_and_val.value.value()->i64.value()->as_double));
+    EXPECT_TRUE(std::signbit(tag_and_val.value.value()->i64.value()->as_double));
+  }
+
+  { // field 5
+    auto tag_and_val = p_data->message->at(4);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 5);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 0);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 0);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 0.0);
+  }
+
+  { // field 6
+    auto tag_and_val = p_data->message->at(5);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 6);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 9223372036854775808u);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, -0.0);
+  }
+
+  { // field 7
+    auto tag_and_val = p_data->message->at(6);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 7);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 0);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 0);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 0.0);
+  }
+
+  { // field 8
+    auto tag_and_val = p_data->message->at(7);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 8);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 9218868437227405312);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 9218868437227405312);
+    EXPECT_TRUE(std::isinf(tag_and_val.value.value()->i64.value()->as_double));
+    EXPECT_FALSE(std::signbit(tag_and_val.value.value()->i64.value()->as_double));
+  }
+
+  { // field 9
+    auto tag_and_val = p_data->message->at(8);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 9);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 18442240474082181120u);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, -4503599627370496);
+    EXPECT_TRUE(std::isinf(tag_and_val.value.value()->i64.value()->as_double));
+    EXPECT_TRUE(std::signbit(tag_and_val.value.value()->i64.value()->as_double));
+  }
+
+  { // field 10
+    auto tag_and_val = p_data->message->at(9);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 10);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 150);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 150);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 7.41098e-322);
+  }
+
+  { // field 11
+    auto tag_and_val = p_data->message->at(10);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 11);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 18446744073709551466u);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, -150);
+    EXPECT_TRUE(std::isnan(tag_and_val.value.value()->i64.value()->as_double));
+    EXPECT_TRUE(std::signbit(tag_and_val.value.value()->i64.value()->as_double));
+  }
+
+  { // field 12
+    auto tag_and_val = p_data->message->at(11);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 12);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 4639485190814774067);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 4639485190814774067);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 150.1);
+  }
+
+  { // field 13
+    auto tag_and_val = p_data->message->at(12);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 13);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 13862857227669549875u);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, -4583886846040001741);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, -150.1);
+  }
+
+  { // field 14
+    auto tag_and_val = p_data->message->at(13);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 14);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 4607182418800017409);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 4607182418800017409);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 1.0);
+  }
+
+  { // field 15
+    auto tag_and_val = p_data->message->at(14);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 15);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 4577909021222109184);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 4577909021222109184);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 3.0 / 256.0);
+  }
+
+  { // field 16
+    auto tag_and_val = p_data->message->at(15);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 16);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 1);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 1);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 4.9406564584124654e-324);
+  }
+
+  { // field 17
+    auto tag_and_val = p_data->message->at(16);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 17);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 4503599627370495);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 4503599627370495);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 2.2250738585072009e-308);
+  }
+
+  { // field 18
+    auto tag_and_val = p_data->message->at(17);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 18);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 4503599627370496);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 4503599627370496);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 2.2250738585072014e-308);
+  }
+
+  { // field 19
+    auto tag_and_val = p_data->message->at(18);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 19);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 9218868437227405311);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 9218868437227405311);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 1.7976931348623157e308);
+  }
+
+  { // field 20
+    auto tag_and_val = p_data->message->at(19);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 20);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 9218868437227405313);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 9218868437227405313);
+    EXPECT_TRUE(std::isnan(tag_and_val.value.value()->i64.value()->as_double));
+    EXPECT_FALSE(std::signbit(tag_and_val.value.value()->i64.value()->as_double));
+  }
+
+  { // field 21
+    auto tag_and_val = p_data->message->at(20);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 21);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 9221120237041090561);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 9221120237041090561);
+    EXPECT_TRUE(std::isnan(tag_and_val.value.value()->i64.value()->as_double));
+    EXPECT_FALSE(std::signbit(tag_and_val.value.value()->i64.value()->as_double));
+  }
+
+  { // field 22
+    auto tag_and_val = p_data->message->at(21);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 22);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 9223372036854775807);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 9223372036854775807);
+    EXPECT_TRUE(std::isnan(tag_and_val.value.value()->i64.value()->as_double));
+    EXPECT_FALSE(std::signbit(tag_and_val.value.value()->i64.value()->as_double));
+  }
+
+  { // field 23
+    auto tag_and_val = p_data->message->at(22);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 23);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 4599676419421066581);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 4599676419421066581);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 1.0 / 3.0);
+  }
+
+  { // field 24
+    auto tag_and_val = p_data->message->at(23);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 24);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I64);
+    ASSERT_FALSE(tag_and_val.value.value()->i64->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_unsigned, 4614256656748904448);
+    EXPECT_EQ(tag_and_val.value.value()->i64.value()->as_twos_compliment, 4614256656748904448);
+    EXPECT_DOUBLE_EQ(tag_and_val.value.value()->i64.value()->as_double, 3.14159274101257324);
   }
 
 }
