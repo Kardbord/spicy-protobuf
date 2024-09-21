@@ -865,19 +865,36 @@ TEST_F(SpicyProtobufTest, TestGroups) {
   // protobuf_groups
   auto p_data = parseMessage(reinterpret_cast<const char *>(groups_protobuf_groups_binpb), groups_protobuf_groups_binpb_len, ParseFlag::NONE);
   auto p_msg = p_data->message;
-  ASSERT_EQ(p_msg->size(), 4);
+  ASSERT_EQ(p_msg->size(), 6);
 
-  { // Field 8, SGROUP
+  { // Field 1
     auto tag_and_val = p_data->message->at(0);
-    EXPECT_EQ(tag_and_val.tag.value()->field_num, 8);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 1);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::VARINT);
+    EXPECT_FALSE(tag_and_val.value.value()->sgroup);
+    EXPECT_FALSE(tag_and_val.value.value()->egroup);
+    ASSERT_FALSE(tag_and_val.value.value()->varint->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_unsigned, 1);
+    EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_zigzag, -1);
+    EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_twos_compliment64, 1);
+    EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_twos_compliment32, 1);
+    EXPECT_FALSE(tag_and_val.group.has_value());
+  }
+
+  int32_t group_num = -1;
+  { // Field 2, SGROUP
+    auto tag_and_val = p_data->message->at(1);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 2);
+    group_num = tag_and_val.tag.value()->field_num;
     EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::SGROUP);
     EXPECT_TRUE(tag_and_val.value.value()->sgroup);
     EXPECT_FALSE(tag_and_val.value.value()->egroup);
+    EXPECT_EQ(tag_and_val.group, group_num);
   }
 
-  { // Field 1
-    auto tag_and_val = p_data->message->at(1);
-    EXPECT_EQ(tag_and_val.tag.value()->field_num, 1);
+  { // Field 3
+    auto tag_and_val = p_data->message->at(2);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 3);
     EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::VARINT);
     EXPECT_FALSE(tag_and_val.value.value()->sgroup);
     EXPECT_FALSE(tag_and_val.value.value()->egroup);
@@ -886,11 +903,12 @@ TEST_F(SpicyProtobufTest, TestGroups) {
     EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_zigzag, 1);
     EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_twos_compliment64, 2);
     EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_twos_compliment32, 2);
+    EXPECT_EQ(tag_and_val.group, group_num);
   }
 
-  { // Field 3
-    auto tag_and_val = p_data->message->at(2);
-    EXPECT_EQ(tag_and_val.tag.value()->field_num, 3);
+  { // Field 4
+    auto tag_and_val = p_data->message->at(3);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 4);
     EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::I32);
     EXPECT_FALSE(tag_and_val.value.value()->sgroup);
     EXPECT_FALSE(tag_and_val.value.value()->egroup);
@@ -898,14 +916,30 @@ TEST_F(SpicyProtobufTest, TestGroups) {
     EXPECT_EQ(tag_and_val.value.value()->i32.value()->as_unsigned, 1078530011);
     EXPECT_EQ(tag_and_val.value.value()->i32.value()->as_twos_compliment, 1078530011);
     EXPECT_FLOAT_EQ(tag_and_val.value.value()->i32.value()->as_float, 3.1415927);
+    EXPECT_EQ(tag_and_val.group, group_num);
   }
 
-  { // Field 8, EGROUP
-    auto tag_and_val = p_data->message->at(3);
-    EXPECT_EQ(tag_and_val.tag.value()->field_num, 8);
+  { // Field 2, EGROUP
+    auto tag_and_val = p_data->message->at(4);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, group_num);
     EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::EGROUP);
-    EXPECT_TRUE(tag_and_val.value.value()->egroup);
     EXPECT_FALSE(tag_and_val.value.value()->sgroup);
+    EXPECT_TRUE(tag_and_val.value.value()->egroup);
+    EXPECT_EQ(tag_and_val.group, group_num);
+  }
+
+  { // Field 5
+    auto tag_and_val = p_data->message->at(5);
+    EXPECT_EQ(tag_and_val.tag.value()->field_num, 5);
+    EXPECT_EQ(tag_and_val.tag.value()->wire_type.value(), WireType::VARINT);
+    EXPECT_FALSE(tag_and_val.value.value()->sgroup);
+    EXPECT_FALSE(tag_and_val.value.value()->egroup);
+    ASSERT_FALSE(tag_and_val.value.value()->varint->isNull());
+    EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_unsigned, 3);
+    EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_zigzag, -2);
+    EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_twos_compliment64, 3);
+    EXPECT_EQ(tag_and_val.value.value()->varint.value()->as_twos_compliment32, 3);
+    EXPECT_FALSE(tag_and_val.group.has_value());
   }
 }
 

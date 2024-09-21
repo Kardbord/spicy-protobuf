@@ -23,9 +23,26 @@ type WireType = enum {
     I32    = 0x05
 };
 
+const UNSET_GROUP: int32 = -1;
+global g_current_group: int32 = UNSET_GROUP;
+
 type TagAndValue = unit {
     tag:   Tag;
     value: Value(self.tag);
+
+    var group: int32 &optional;
+
+    on %done {
+        if (self.value.sgroup) {
+            g_current_group = int32(self.tag.field_num);
+        }
+        if (g_current_group != UNSET_GROUP) {
+            self.group = g_current_group;
+        }
+        if (self.value.egroup) {
+            g_current_group = UNSET_GROUP;
+        }
+    }
 };
 
 # tag := (field << 3) | wire_type
